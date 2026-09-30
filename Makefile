@@ -122,3 +122,4 @@ kernel/tictactoe.o: kernel/tictactoe.c
 
 kernel/life.o: kernel/life.c
 	$(CC) $(CFLAGS) -c $< -o $@
+

@@ -14,7 +14,7 @@ extern void gui_run_life(void);
 extern void gui_run_life(void);
 
 #define N_MAIN 6
-#define N_GAMES 8
+#define N_GAMES 7
 
 static int active = 0;
 static int screen = 0;       /* 0=menu, 1=games, 2=window, 3=game */
@@ -38,7 +38,7 @@ static const char *game_items[N_GAMES] = {
     "5. Minesweeper",
     "6. Tic-tac-toe",
     "7. Life",
-    "8. Back to menu",
+    "7. Back to menu",
 };
 
 static void draw_str(int x, int y, const char *s, uint8_t attr) {
