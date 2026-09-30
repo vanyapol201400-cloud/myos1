@@ -10,9 +10,11 @@ extern void gui_run_tetris(void);
 extern void gui_run_minesweeper(void);
 extern void gui_run_2048(void);
 extern void gui_run_tictactoe(void);
+extern void gui_run_life(void);
+extern void gui_run_life(void);
 
 #define N_MAIN 6
-#define N_GAMES 7
+#define N_GAMES 8
 
 static int active = 0;
 static int screen = 0;       /* 0=menu, 1=games, 2=window, 3=game */
@@ -35,7 +37,8 @@ static const char *game_items[N_GAMES] = {
     "4. 2048",
     "5. Minesweeper",
     "6. Tic-tac-toe",
-    "7. Back to menu",
+    "7. Life",
+    "8. Back to menu",
 };
 
 static void draw_str(int x, int y, const char *s, uint8_t attr) {
@@ -169,6 +172,8 @@ void gui_key(int key) {
             else if (selected == 3) { gui_run_2048(); gui_draw(); }
             else if (selected == 4) { gui_run_minesweeper(); gui_draw(); }
             else if (selected == 5) { gui_run_tictactoe(); gui_draw(); }
+            else if (selected == 6) { gui_run_life(); gui_draw(); }
+            else if (selected == 6) { gui_run_life(); gui_draw(); }
             else { screen = 0; selected = 0; gui_draw(); }
         } else if (key == 0x1B) { screen = 0; selected = 0; gui_draw(); }
         else if (key >= '1' && key <= '6') { selected = key - '1'; gui_draw(); }
