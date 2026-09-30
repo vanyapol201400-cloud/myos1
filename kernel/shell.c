@@ -468,8 +468,8 @@ static void cmd_run(const char *a) {
 }
 
 static void cmd_install(void) {
-    extern int install_builtin_programs(void);
-    install_builtin_programs();
+//     extern int install_builtin_programs(void);
+//     install_builtin_programs();
 }
 
 static void cmd_box(void) {
