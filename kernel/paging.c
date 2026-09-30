@@ -8,8 +8,8 @@ void paging_init(void) {
     uint32_t *pd = (uint32_t *)PAGE_DIR;
     for (int i = 0; i < 1024; i++) pd[i] = 0;
 
-    /* Identity-map 0..24 МБ с флагом USER (7 = present|rw|user) */
-    for (int t = 0; t < 8; t++) {
+    /* Identity-map 0..128 МБ с флагом USER (7 = present|rw|user) */
+    for (int t = 0; t < 32; t++) {
         uint32_t *pt = (uint32_t *)(PAGE_TABLE + t * 0x1000);
         for (int i = 0; i < 1024; i++) {
             pt[i] = ((t * 0x400000) + i * 0x1000) | 7;   /* USER! */

@@ -27,7 +27,7 @@ extern void print_hex8(uint8_t n);
 #define VN_STATUS_OK    4
 
 #define QSIZE 128
-#define VQ_PAGE 0x2000000    /* 32 МБ — для virtqueue */
+#define VQ_PAGE 0x1E00000    /* 30 МБ — внутри замапленных 32 МБ */
 
 struct vq_desc { uint64_t addr; uint32_t len; uint16_t flags; uint16_t next; } __attribute__((packed));
 struct vq_avail { uint16_t flags; uint16_t idx; uint16_t ring[QSIZE]; uint16_t used_event; } __attribute__((packed));

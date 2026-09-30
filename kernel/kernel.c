@@ -255,7 +255,7 @@ void kernel_main(void) {
     {
         extern int virtio_net_init(void);
         extern void virtio_net_get_mac(uint8_t *mac);
-        int r = virtio_net_init();
+        int r = -1; /* debug */
         if (r == 0) {
             print("virtio-net OK, MAC: ");
             uint8_t mac[6];
