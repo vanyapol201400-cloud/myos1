@@ -176,7 +176,7 @@ void gui_key(int key) {
             else if (selected == 6) { gui_run_life(); gui_draw(); }
             else { screen = 0; selected = 0; gui_draw(); }
         } else if (key == 0x1B) { screen = 0; selected = 0; gui_draw(); }
-        else if (key >= '1' && key <= '6') { selected = key - '1'; gui_draw(); }
+        else if (key >= '1' && key <= '8') { selected = key - '1'; gui_draw(); }
         return;
     }
 
@@ -195,5 +195,5 @@ void gui_key(int key) {
             __asm__ volatile ("int $0");
         }
     } else if (key == 0x1B) { active = 0; }
-    else if (key >= '1' && key <= '6') { selected = key - '1'; gui_draw(); }
+    else if (key >= '1' && key <= '8') { selected = key - '1'; gui_draw(); }
 }
