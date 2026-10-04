@@ -13,6 +13,7 @@ extern void gui_run_tictactoe(void);
 extern void gui_run_life(void);
 extern void gui_run_puzzle15(void);
 extern void gui_run_memory(void);
+extern void speaker_click(void);
 
 #define N_MAIN  6
 #define N_GAMES 10
@@ -225,6 +226,7 @@ void gui_key(int key) {
         else if (key == 0x14) { if (selected >= 6) selected -= 6; gui_draw(); }
         else if (key == 0x16) { if (selected < 6 && selected + 6 < N_GAMES) selected += 6; gui_draw(); }
         else if (key == '\n') {
+            speaker_click();
             if      (selected == 0) { gui_run_snake();        gui_draw(); }
             else if (selected == 1) { gui_run_pong();         gui_draw(); }
             else if (selected == 2) { gui_run_tetris();       gui_draw(); }
