@@ -11,10 +11,10 @@ extern void gui_run_minesweeper(void);
 extern void gui_run_2048(void);
 extern void gui_run_tictactoe(void);
 extern void gui_run_life(void);
-extern void gui_run_life(void);
+extern void gui_run_sudoku(void);
 
 #define N_MAIN 6
-#define N_GAMES 7
+#define N_GAMES 8
 
 static int active = 0;
 static int screen = 0;       /* 0=menu, 1=games, 2=window, 3=game */
@@ -38,7 +38,7 @@ static const char *game_items[N_GAMES] = {
     "5. Minesweeper",
     "6. Tic-tac-toe",
     "7. Life",
-    "7. Back to menu",
+    "8. Back to menu",
 };
 
 static void draw_str(int x, int y, const char *s, uint8_t attr) {
@@ -90,22 +90,13 @@ static void draw_menu(void) {
 static void draw_games(void) {
     clear_all();
     header();
-    fill_rect(5, 4, 70, 17, 0x17);
-    draw_str(33, 5, "=== Games ===", 0x1F);
-
-    /* Левый столбец: 0..5 (Snake..TTT) */
-    for (int i = 0; i < 6 && i < N_GAMES; i++) {
+    fill_rect(15, 6, 50, 13, 0x17);
+    draw_str(17, 6, "=== Games ===", 0x1F);
+    for (int i = 0; i < N_GAMES; i++) {
         uint8_t attr = (i == selected) ? 0x4F : 0x17;
-        draw_str(10, 8 + i * 2, game_items[i], attr);
+        draw_str(19, 8 + i * 2, game_items[i], attr);
     }
-
-    /* Правый столбец: 6..7 (Life, Back) */
-    for (int i = 6; i < N_GAMES && i < 8; i++) {
-        uint8_t attr = (i == selected) ? 0x4F : 0x17;
-        draw_str(45, 8 + (i - 6) * 2, game_items[i], attr);
-    }
-
-    footer("Up/Down: select  Left/Right: column  Enter: play  Esc: back");
+    footer("Up/Down: select  Enter: play  Esc: back");
 }
 
 static void draw_window(void) {
@@ -181,7 +172,6 @@ void gui_key(int key) {
             else if (selected == 3) { gui_run_2048(); gui_draw(); }
             else if (selected == 4) { gui_run_minesweeper(); gui_draw(); }
             else if (selected == 5) { gui_run_tictactoe(); gui_draw(); }
-            else if (selected == 6) { gui_run_life(); gui_draw(); }
             else { screen = 0; selected = 0; gui_draw(); }
         } else if (key == 0x1B) { screen = 0; selected = 0; gui_draw(); }
         else if (key >= '1' && key <= '8') { selected = key - '1'; gui_draw(); }
