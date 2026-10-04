@@ -13,12 +13,24 @@ extern void gui_key(int key);
 extern int  gui_active(void);
 extern void gui_exit(void);
 extern void cls_direct(void);
+extern void draw_clock(int x, int y);
+extern uint32_t get_ticks(void);
 
 #define VGA_HEIGHT 25
 
 void shell_loop(void) {
+    uint32_t last_sec = 0;
     while (1) {
         __asm__ volatile ("hlt");
+
+        /* Обновление часов каждую секунду */
+        uint32_t now_sec = get_ticks() / 100;
+        if (now_sec != last_sec) {
+            last_sec = now_sec;
+            if (gui_active()) {
+                draw_clock(60, 0);
+            }
+        }
 
         if (keyboard_has_char()) {
             char c = keyboard_get_char();

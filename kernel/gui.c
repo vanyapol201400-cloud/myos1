@@ -12,9 +12,10 @@ extern void gui_run_2048(void);
 extern void gui_run_tictactoe(void);
 extern void gui_run_life(void);
 extern void gui_run_puzzle15(void);
+extern void gui_run_memory(void);
 
 #define N_MAIN  6
-#define N_GAMES 9
+#define N_GAMES 10
 
 static int active   = 0;
 static int screen   = 0;
@@ -54,11 +55,29 @@ static void draw_frame(int x, int y, int w, int h, uint8_t attr) {
     }
 }
 
+extern uint32_t get_ticks(void);
+
+extern void rtc_read_time(uint8_t *h, uint8_t *m, uint8_t *s);
+
+void draw_clock(int x, int y) {
+    uint8_t h, m, s;
+    rtc_read_time(&h, &m, &s);
+    char buf[9];
+    buf[0] = '0' + h / 10; buf[1] = '0' + h % 10;
+    buf[2] = ':';
+    buf[3] = '0' + m / 10; buf[4] = '0' + m % 10;
+    buf[5] = ':';
+    buf[6] = '0' + s / 10; buf[7] = '0' + s % 10;
+    buf[8] = 0;
+    draw_str(x, y, buf, 0x1E);
+}
+
 static void header(const char *title) {
     fill_rect(0, 0, 80, 1, 0x1E);
     draw_str(2, 0, "MyOS v0.1", 0x1E);
-    if (title) draw_str(35, 0, title, 0x1E);
-    draw_str(70, 0, "GUI", 0x1E);
+    if (title) draw_str(33, 0, title, 0x1E);
+    draw_str(68, 0, "GUI", 0x1E);
+    draw_clock(60, 0);
 }
 
 static void footer(const char *s) {
@@ -116,8 +135,8 @@ static void draw_games(void) {
     };
     const char *lkeys[6] = {"1","2","3","4","5","6"};
 
-    const char *ritems[3] = {"Life", "15-puzzle", "Back to menu"};
-    const char *rkeys[3] = {"7","8","9"};
+    const char *ritems[4] = {"Life", "15-puzzle", "Memory", "Back to menu"};
+    const char *rkeys[4] = {"7","8","9","0"};
 
     /* левый столбец 0..5 */
     for (int i = 0; i < 6; i++) {
@@ -134,8 +153,8 @@ static void draw_games(void) {
         draw_str(13, 6 + i * 2, litems[i], attr);
     }
 
-    /* правый столбец 6..8 */
-    for (int i = 0; i < 3; i++) {
+    /* правый столбец 6..9 */
+    for (int i = 0; i < 4; i++) {
         int idx = i + 6;
         uint8_t attr  = (idx == selected) ? 0x4E : 0x1F;
         uint8_t kattr = (idx == selected) ? 0x4E : 0x0E;
@@ -214,6 +233,7 @@ void gui_key(int key) {
             else if (selected == 5) { gui_run_tictactoe();    gui_draw(); }
             else if (selected == 6) { gui_run_life();         gui_draw(); }
             else if (selected == 7) { gui_run_puzzle15();     gui_draw(); }
+            else if (selected == 8) { gui_run_memory();       gui_draw(); }
             else                    { screen = 0; selected = 0; gui_draw(); }
         }
         else if (key == 0x1B) { screen = 0; selected = 0; gui_draw(); }
