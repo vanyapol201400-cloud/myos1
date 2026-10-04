@@ -49,3 +49,22 @@ void rtc_read_time(uint8_t *h, uint8_t *m, uint8_t *s) {
     *m = min;
     *s = sec;
 }
+
+/* Дата: day, month, year */
+void rtc_read_date(uint8_t *d, uint8_t *mo, uint16_t *y) {
+    while (rtc_updating()) { }
+
+    uint8_t day   = cmos_read(0x07);
+    uint8_t month = cmos_read(0x08);
+    uint8_t year  = cmos_read(0x09);
+    uint8_t regB  = cmos_read(0x0B);
+
+    if (!(regB & 0x04)) {
+        day   = bcd_to_bin(day);
+        month = bcd_to_bin(month);
+        year  = bcd_to_bin(year);
+    }
+    *d  = day;
+    *mo = month;
+    *y  = 2000 + year;
+}
