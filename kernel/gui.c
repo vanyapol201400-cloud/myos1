@@ -20,85 +20,161 @@ static int active   = 0;
 static int screen   = 0;
 static int selected = 0;
 
-/* ---- утилиты ---- */
+/* ---------- утилиты ---------- */
 static void clear_all(void) {
     for (int y = 0; y < 25; y++)
         for (int x = 0; x < 80; x++)
             vga_put_char_at(x, y, ' ', 0x07);
 }
+
 static void draw_str(int x, int y, const char *s, uint8_t attr) {
     for (int i = 0; s[i]; i++)
         vga_put_char_at(x + i, y, s[i], attr);
 }
+
 static void fill_rect(int x, int y, int w, int h, uint8_t attr) {
     for (int j = 0; j < h; j++)
         for (int i = 0; i < w; i++)
             vga_put_char_at(x + i, y + j, ' ', attr);
 }
-static void header(void) {
-    fill_rect(0, 0, 80, 1, 0x70);
-    draw_str(2, 0, "MyOS v0.1", 0x70);
-    draw_str(70, 0, "GUI", 0x70);
-}
-static void footer(const char *s) {
-    fill_rect(0, 24, 80, 1, 0x70);
-    draw_str(2, 24, s, 0x70);
+
+/* Простая рамка (ASCII) */
+static void draw_frame(int x, int y, int w, int h, uint8_t attr) {
+    vga_put_char_at(x,         y,         '+', attr);
+    vga_put_char_at(x + w - 1, y,         '+', attr);
+    vga_put_char_at(x,         y + h - 1, '+', attr);
+    vga_put_char_at(x + w - 1, y + h - 1, '+', attr);
+    for (int i = 1; i < w - 1; i++) {
+        vga_put_char_at(x + i, y,         '-', attr);
+        vga_put_char_at(x + i, y + h - 1, '-', attr);
+    }
+    for (int j = 1; j < h - 1; j++) {
+        vga_put_char_at(x,         y + j, '|', attr);
+        vga_put_char_at(x + w - 1, y + j, '|', attr);
+    }
 }
 
-/* ---- главное меню ---- */
+static void header(const char *title) {
+    fill_rect(0, 0, 80, 1, 0x1E);
+    draw_str(2, 0, "MyOS v0.1", 0x1E);
+    if (title) draw_str(35, 0, title, 0x1E);
+    draw_str(70, 0, "GUI", 0x1E);
+}
+
+static void footer(const char *s) {
+    fill_rect(0, 24, 80, 1, 0x1E);
+    draw_str(2, 24, s, 0x1E);
+}
+
+/* ---------- главное меню ---------- */
 static void draw_menu(void) {
     clear_all();
-    header();
-    fill_rect(15, 4, 50, 17, 0x17);
-    draw_str(17, 5, "=== MyOS Menu ===", 0x1F);
+    header("Main Menu");
 
-    draw_str(19, 7,  "1. File manager", (selected == 0) ? 0x4F : 0x1F);
-    draw_str(19, 9,  "2. Games",        (selected == 1) ? 0x4F : 0x1F);
-    draw_str(19, 11, "3. Calculator",   (selected == 2) ? 0x4F : 0x1F);
-    draw_str(19, 13, "4. About MyOS",   (selected == 3) ? 0x4F : 0x1F);
-    draw_str(19, 15, "5. Exit GUI",     (selected == 4) ? 0x4F : 0x1F);
-    draw_str(19, 17, "6. Reboot",       (selected == 5) ? 0x4F : 0x1F);
+    fill_rect(16, 5, 51, 17, 0x08);       /* тень */
+    fill_rect(15, 4, 51, 17, 0x17);       /* панель */
+    draw_frame(15, 4, 51, 17, 0x1E);
 
-    footer("Up/Down: select  Enter: choose  Esc: exit to shell");
+    draw_str(30, 4, " MyOS Menu ", 0x1E);
+
+    const char *items[6] = {
+        "File manager", "Games", "Calculator",
+        "About MyOS", "Exit GUI", "Reboot"
+    };
+    const char *keys[6] = {"F", "G", "C", "i", "X", "R"};
+
+    for (int i = 0; i < N_MAIN; i++) {
+        uint8_t attr  = (i == selected) ? 0x4E : 0x1F;
+        uint8_t kattr = (i == selected) ? 0x4E : 0x0E;
+
+        if (i == selected)
+            for (int x = 17; x < 64; x++)
+                vga_put_char_at(x, 7 + i * 2, ' ', 0x4E);
+
+        draw_str(18, 7 + i * 2, "[", kattr);
+        vga_put_char_at(19, 7 + i * 2, keys[i][0], kattr);
+        draw_str(20, 7 + i * 2, "] ", kattr);
+        draw_str(23, 7 + i * 2, items[i], attr);
+    }
+
+    footer("Up/Down: select   Enter: choose   Esc: exit to shell");
 }
 
-/* ---- меню игр (2 столбца) ---- */
+/* ---------- меню игр (2 столбца) ---------- */
 static void draw_games(void) {
     clear_all();
-    header();
-    fill_rect(5, 3, 70, 19, 0x17);
-    draw_str(33, 4, "=== Games ===", 0x1F);
+    header("Games");
+
+    fill_rect(6, 4, 69, 17, 0x08);
+    fill_rect(5, 3, 69, 17, 0x17);
+    draw_frame(5, 3, 69, 17, 0x1E);
+
+    draw_str(33, 3, " Games ", 0x1E);
+
+    const char *litems[6] = {
+        "Snake", "Pong", "Tetris", "2048", "Minesweeper", "Tic-tac-toe"
+    };
+    const char *lkeys[6] = {"1","2","3","4","5","6"};
+
+    const char *ritems[3] = {"Life", "15-puzzle", "Back to menu"};
+    const char *rkeys[3] = {"7","8","9"};
 
     /* левый столбец 0..5 */
-    draw_str(10,  6, "1. Snake",        (selected==0)?0x4F:0x17);
-    draw_str(10,  8, "2. Pong",         (selected==1)?0x4F:0x17);
-    draw_str(10, 10, "3. Tetris",       (selected==2)?0x4F:0x17);
-    draw_str(10, 12, "4. 2048",         (selected==3)?0x4F:0x17);
-    draw_str(10, 14, "5. Minesweeper",  (selected==4)?0x4F:0x17);
-    draw_str(10, 16, "6. Tic-tac-toe",  (selected==5)?0x4F:0x17);
+    for (int i = 0; i < 6; i++) {
+        uint8_t attr  = (i == selected) ? 0x4E : 0x1F;
+        uint8_t kattr = (i == selected) ? 0x4E : 0x0E;
+
+        if (i == selected)
+            for (int x = 7; x < 38; x++)
+                vga_put_char_at(x, 6 + i * 2, ' ', 0x4E);
+
+        draw_str( 8, 6 + i * 2, "[", kattr);
+        vga_put_char_at( 9, 6 + i * 2, lkeys[i][0], kattr);
+        draw_str(10, 6 + i * 2, "] ", kattr);
+        draw_str(13, 6 + i * 2, litems[i], attr);
+    }
 
     /* правый столбец 6..8 */
-    draw_str(45,  6, "7. Life",         (selected==6)?0x4F:0x17);
-    draw_str(45,  8, "8. 15-puzzle",    (selected==7)?0x4F:0x17);
-    draw_str(45, 10, "9. Back to menu", (selected==8)?0x4F:0x17);
+    for (int i = 0; i < 3; i++) {
+        int idx = i + 6;
+        uint8_t attr  = (idx == selected) ? 0x4E : 0x1F;
+        uint8_t kattr = (idx == selected) ? 0x4E : 0x0E;
+
+        if (idx == selected)
+            for (int x = 43; x < 72; x++)
+                vga_put_char_at(x, 6 + i * 2, ' ', 0x4E);
+
+        draw_str(44, 6 + i * 2, "[", kattr);
+        vga_put_char_at(45, 6 + i * 2, rkeys[i][0], kattr);
+        draw_str(46, 6 + i * 2, "] ", kattr);
+        draw_str(49, 6 + i * 2, ritems[i], attr);
+    }
 
     footer("Up/Down: select  Left/Right: column  Enter: play  Esc: back");
 }
 
-/* ---- окно About ---- */
+/* ---------- окно About ---------- */
 static void draw_window(void) {
     clear_all();
-    header();
-    fill_rect(5, 3, 70, 19, 0x17);
-    draw_str(7, 4, "About MyOS", 0x1F);
-    draw_str(7, 6, "MyOS v0.1", 0x1F);
-    draw_str(7, 8, "Simple 32-bit OS", 0x1F);
-    draw_str(7, 10, "C + NASM, QEMU", 0x1F);
-    draw_str(7, 12, "Games + GUI + Shell", 0x1F);
+    header("About");
+
+    fill_rect(6, 4, 69, 17, 0x08);
+    fill_rect(5, 3, 69, 17, 0x17);
+    draw_frame(5, 3, 69, 17, 0x1E);
+
+    draw_str(32, 3, " About MyOS ", 0x1E);
+    draw_str( 8,  6, "MyOS v0.1", 0x1F);
+    draw_str( 8,  8, "Simple 32-bit OS", 0x1F);
+    draw_str( 8, 10, "C + NASM + QEMU", 0x1F);
+    draw_str( 8, 12, "GUI, Shell, 9 games", 0x1F);
+    draw_str( 8, 14, "myfs, virtio, task, user mode", 0x1F);
+    draw_str( 8, 16, "by vanyapol201400-cloud", 0x0E);
+    draw_str( 8, 18, "github.com/vanyapol201400-cloud/myos1", 0x0E);
+
     footer("Esc: back");
 }
 
-/* ---- API ---- */
+/* ---------- API ---------- */
 void gui_init(void) {
     active = 1;
     screen = 0;
@@ -119,15 +195,13 @@ void gui_exit(void)   { active = 0; }
 void gui_key(int key) {
     if (!active) return;
 
-    /* Окно */
     if (screen == 2) {
         if (key == 0x1B) { screen = 0; selected = 0; gui_draw(); }
         return;
     }
 
-    /* Меню игр */
     if (screen == 1) {
-        if (key == 0x11) { if (selected > 0) selected--; gui_draw(); }
+        if      (key == 0x11) { if (selected > 0) selected--; gui_draw(); }
         else if (key == 0x12) { if (selected < N_GAMES - 1) selected++; gui_draw(); }
         else if (key == 0x14) { if (selected >= 6) selected -= 6; gui_draw(); }
         else if (key == 0x16) { if (selected < 6 && selected + 6 < N_GAMES) selected += 6; gui_draw(); }
@@ -147,8 +221,7 @@ void gui_key(int key) {
         return;
     }
 
-    /* Главное меню */
-    if (key == 0x11) { if (selected > 0) selected--; gui_draw(); }
+    if      (key == 0x11) { if (selected > 0) selected--; gui_draw(); }
     else if (key == 0x12) { if (selected < N_MAIN - 1) selected++; gui_draw(); }
     else if (key == '\n') {
         if      (selected == 0) { gui_run_fileman(); gui_draw(); }
