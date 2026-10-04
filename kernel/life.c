@@ -80,7 +80,7 @@ void gui_run_life(void) {
     while (1) {
         if (keyboard_has_char()) {
             char c = keyboard_get_char();
-            if (c == 0x1B) return;
+            if (c == 27 || c == 0x1B) return;
             if (c == 'r' || c == 'R') { life_random(); gen = 0; life_draw(gen); }
             if (c == 'c' || c == 'C') { life_clear();  gen = 0; life_draw(gen); }
             if (c == ' ') paused = !paused;
