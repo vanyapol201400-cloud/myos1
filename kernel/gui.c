@@ -87,10 +87,27 @@ static void footer(const char *s) {
     draw_str(2, 24, s, 0x1E);
 }
 
+
+/* Анимация "шторка" — панель расширяется от центра */
+static void gui_animate_panel(int cx, int cy, int max_w, int max_h, uint8_t attr) {
+    for (int w = 2; w <= max_w; w += 4) {
+        int x = cx - w / 2;
+        int y = cy - max_h / 2;
+        for (int j = 0; j < max_h; j++)
+            for (int i = 0; i < w; i++)
+                vga_put_char_at(x + i, y + j, ' ', attr);
+        for (volatile int s = 0; s < 200000; s++) { }
+    }
+    /* Финальная отрисовка полного размера */
+    fill_rect(cx - max_w / 2, cy - max_h / 2, max_w, max_h, attr);
+}
+
 /* ---------- главное меню ---------- */
 static void draw_menu(void) {
     clear_all();
     header("Main Menu");
+
+    gui_animate_panel(40, 12, 51, 17, 0x17);
 
     fill_rect(16, 5, 51, 17, 0x08);       /* тень */
     fill_rect(15, 4, 51, 17, 0x17);       /* панель */
@@ -130,6 +147,8 @@ static void draw_menu(void) {
 static void draw_games(void) {
     clear_all();
     header("Games");
+
+    gui_animate_panel(40, 12, 69, 17, 0x17);
 
     fill_rect(6, 4, 69, 17, 0x08);
     fill_rect(5, 3, 69, 17, 0x17);
