@@ -1,10 +1,14 @@
 ENTRY(_start)
 
 SECTIONS {
-    . = 0x10000;      /* ядро грузится с 0x10000 (64 КБ) */
+    . = 0x10000;
 
-    .text : { *(.text) }
-    .rodata : { *(.rodata) }
+    .text : {
+        *(.multiboot)
+        *(.text)
+        *(.rodata)
+    }
+
     .data : { *(.data) }
-    .bss : { *(.bss) }
+    .bss  : { *(.bss) *(COMMON) }
 }

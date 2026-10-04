@@ -11,17 +11,18 @@ extern void gui_run_minesweeper(void);
 extern void gui_run_2048(void);
 extern void gui_run_tictactoe(void);
 extern void gui_run_life(void);
+extern void gui_run_puzzle15(void);
 extern void gui_run_sudoku(void);
 
 #define N_MAIN 6
-#define N_GAMES 8
+#define N_GAMES 9
 
 static int active = 0;
 static int screen = 0;       /* 0=menu, 1=games, 2=window, 3=game */
 static int selected = 0;
 static int window_type = 0;
 
-static const char *main_items[N_MAIN] = {
+static char *main_items[N_MAIN] = {
     "1. File manager",
     "2. Games",
     "3. Calculator",
@@ -30,7 +31,7 @@ static const char *main_items[N_MAIN] = {
     "6. Reboot",
 };
 
-static const char *game_items[N_GAMES] = {
+static char *game_items[N_GAMES] = {
     "1. Snake",
     "2. Pong",
     "3. Tetris",
@@ -38,7 +39,8 @@ static const char *game_items[N_GAMES] = {
     "5. Minesweeper",
     "6. Tic-tac-toe",
     "7. Life",
-    "8. Back to menu",
+    "8. 15-puzzle",
+    "9. Back to menu",
 };
 
 static void draw_str(int x, int y, const char *s, uint8_t attr) {
@@ -77,12 +79,17 @@ static const char *menu_icons[N_MAIN] = {
 static void draw_menu(void) {
     clear_all();
     header();
-    fill_rect(15, 4, 50, 17, 0x17);       /* синий фон */
+    fill_rect(15, 4, 50, 17, 0x17);
     draw_str(17, 5, "=== MyOS Menu ===", 0x1F);
+
+    draw_str(19, 7, "TEST_A", 0x4F);
+    draw_str(19, 9, "TEST_B", 0x4F);
+    draw_str(19, 11, main_items[0], 0x4F);
+    draw_str(19, 13, main_items[1], 0x4F);
 
     for (int i = 0; i < N_MAIN; i++) {
         uint8_t attr = (i == selected) ? 0x4F : 0x1F;
-        draw_str(19, 7 + i * 2, main_items[i], attr);
+        draw_str(19, 15 + i * 2, main_items[i], attr);
     }
     footer("Up/Down: select  Enter: choose  Esc: exit to shell");
 }
@@ -90,13 +97,22 @@ static void draw_menu(void) {
 static void draw_games(void) {
     clear_all();
     header();
-    fill_rect(15, 6, 50, 13, 0x17);
-    draw_str(17, 6, "=== Games ===", 0x1F);
-    for (int i = 0; i < N_GAMES; i++) {
+    fill_rect(5, 3, 70, 19, 0x17);
+    draw_str(33, 4, "=== Games ===", 0x1F);
+
+    /* Левый столбец: 0..5 (Snake..TTT) */
+    for (int i = 0; i < 6 && i < N_GAMES; i++) {
         uint8_t attr = (i == selected) ? 0x4F : 0x17;
-        draw_str(19, 8 + i * 2, game_items[i], attr);
+        draw_str(10, 6 + i * 2, game_items[i], attr);
     }
-    footer("Up/Down: select  Enter: play  Esc: back");
+
+    /* Правый столбец: 6..8 (Life, 15-puzzle, Back) */
+    for (int i = 6; i < N_GAMES && i < 9; i++) {
+        uint8_t attr = (i == selected) ? 0x4F : 0x17;
+        draw_str(45, 6 + (i - 6) * 2, game_items[i], attr);
+    }
+
+    footer("Up/Down: select  Left/Right: column  Enter: play  Esc: back");
 }
 
 static void draw_window(void) {
