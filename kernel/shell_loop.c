@@ -12,13 +12,22 @@ extern void gui_draw(void);
 extern void gui_key(int key);
 extern int  gui_active(void);
 extern void gui_exit(void);
+extern void gui_tick(void);
+extern uint32_t get_ticks(void);
 extern void cls_direct(void);
 
 #define VGA_HEIGHT 25
 
 void shell_loop(void) {
+    uint32_t last_blink = 0;
     while (1) {
         __asm__ volatile ("hlt");
+
+        uint32_t now_t = get_ticks();
+        if (now_t - last_blink > 50) {
+            last_blink = now_t;
+            if (gui_active()) gui_tick();
+        }
 
         if (keyboard_has_char()) {
             char c = keyboard_get_char();

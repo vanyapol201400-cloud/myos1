@@ -21,6 +21,7 @@ extern void speaker_click(void);
 static int active   = 0;
 static int screen   = 0;
 static int selected = 0;
+static int blink_state = 0;
 
 /* ---------- утилиты ---------- */
 static void clear_all(void) {
@@ -111,7 +112,12 @@ static void draw_menu(void) {
             for (int x = 17; x < 64; x++)
                 vga_put_char_at(x, 7 + i * 2, ' ', 0x4E);
 
-        draw_str(18, 7 + i * 2, "[", kattr);
+        if (i == selected && blink_state) {
+                vga_put_char_at(16, 7 + i * 2, '>', 0x4E);
+            } else if (i == selected) {
+                vga_put_char_at(16, 7 + i * 2, ' ', 0x4E);
+            }
+            draw_str(18, 7 + i * 2, "[", kattr);
         vga_put_char_at(19, 7 + i * 2, keys[i][0], kattr);
         draw_str(20, 7 + i * 2, "] ", kattr);
         draw_str(23, 7 + i * 2, items[i], attr);
@@ -148,7 +154,12 @@ static void draw_games(void) {
             for (int x = 7; x < 38; x++)
                 vga_put_char_at(x, 6 + i * 2, ' ', 0x4E);
 
-        draw_str( 8, 6 + i * 2, "[", kattr);
+        if (i == selected && blink_state) {
+                vga_put_char_at(6, 6 + i * 2, '>', 0x4E);
+            } else if (i == selected) {
+                vga_put_char_at(6, 6 + i * 2, ' ', 0x4E);
+            }
+            draw_str( 8, 6 + i * 2, "[", kattr);
         vga_put_char_at( 9, 6 + i * 2, lkeys[i][0], kattr);
         draw_str(10, 6 + i * 2, "] ", kattr);
         draw_str(13, 6 + i * 2, litems[i], attr);
@@ -164,7 +175,12 @@ static void draw_games(void) {
             for (int x = 43; x < 72; x++)
                 vga_put_char_at(x, 6 + i * 2, ' ', 0x4E);
 
-        draw_str(44, 6 + i * 2, "[", kattr);
+        if (idx == selected && blink_state) {
+                vga_put_char_at(42, 6 + i * 2, '>', 0x4E);
+            } else if (idx == selected) {
+                vga_put_char_at(42, 6 + i * 2, ' ', 0x4E);
+            }
+            draw_str(44, 6 + i * 2, "[", kattr);
         vga_put_char_at(45, 6 + i * 2, rkeys[i][0], kattr);
         draw_str(46, 6 + i * 2, "] ", kattr);
         draw_str(49, 6 + i * 2, ritems[i], attr);
@@ -207,6 +223,11 @@ void gui_draw(void) {
     if      (screen == 0) draw_menu();
     else if (screen == 1) draw_games();
     else if (screen == 2) draw_window();
+}
+
+void gui_tick(void) {
+    blink_state = !blink_state;
+    /* НЕ перерисовываем весь экран — только мигание курсора */
 }
 
 int  gui_active(void) { return active; }
