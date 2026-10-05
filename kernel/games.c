@@ -237,6 +237,8 @@ static int board[TH][TW];
 static int cur_x, cur_y, cur_piece, cur_rot;
 static int next_piece = 0;
 static int score_t = 0;
+static int tet_level = 1;
+static int tet_lines_total = 0;
 
 static int check_collision(int nx, int ny, int rot) {
     for (int py = 0; py < 4; py++) {
@@ -368,6 +370,8 @@ void gui_run_tetris(void) {
         for (int x = 0; x < TW; x++)
             board[y][x] = 0;
     score_t = 0;
+    tet_level = 1;
+    tet_lines_total = 0;
     draw_board();
 
     /* Спавн */
@@ -400,7 +404,9 @@ void gui_run_tetris(void) {
             draw_piece_at(cur_x, cur_y, cur_rot, colors[cur_piece]);
 
             unsigned int now = get_ticks();
-            int drop = (now - last_tick > 50);
+            int drop_speed = 50 - (tet_level - 1) * 4;
+            if (drop_speed < 10) drop_speed = 10;
+            int drop = (now - last_tick > drop_speed);
             if (drop) last_tick = now;
 
             if (keyboard_has_char()) {
