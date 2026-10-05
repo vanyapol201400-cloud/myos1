@@ -143,6 +143,14 @@ static void draw_menu(void) {
     footer("Up/Down: select   Enter: choose   Esc: exit to shell");
 }
 
+/* Скроллбар справа */
+static void draw_scrollbar(int y, int h, int total, int cur) {
+    for (int i = 0; i < h; i++) {
+        uint8_t attr = (i == (cur * h / (total > 0 ? total : 1))) ? 0x4E : 0x18;
+        vga_put_char_at(76, y + i, 0xB0, attr);  /* ░ */
+    }
+}
+
 /* ---------- меню игр (2 столбца) ---------- */
 static void draw_games(void) {
     clear_all();
