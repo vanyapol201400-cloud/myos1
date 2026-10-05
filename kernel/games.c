@@ -33,7 +33,16 @@ void gui_run_snake(void) {
     int dx = 1, dy = 0;
     int food_x = 15, food_y = 10;
     int score = 0, over = 0;
+    int snake_level = 1;
+    int snake_speed = 15;
     unsigned int seed = 12345;
+
+    /* Стены — массив препятствий */
+    int walls[8][2] = {
+        {10, 5}, {11, 5}, {12, 5},
+        {25, 8}, {25, 9}, {25, 10},
+        {15, 15}, {16, 15}
+    };
 
     snake_x[0] = 10; snake_y[0] = 10;
     snake_x[1] = 9;  snake_y[1] = 10;
@@ -49,8 +58,15 @@ void gui_run_snake(void) {
     }
     draw_str(45, 4, "SNAKE", 0x1F);
     draw_str(45, 6, "Score:", 0x0F);
+    draw_str(45, 8, "Level:", 0x0F);
+    print_num(51, 8, snake_level, 0x0E);
     draw_str(45, 10, "w a s d", 0x0E);
     draw_str(45, 14, "Esc - exit", 0x07);
+
+    /* Стены */
+    for (int i = 0; i < 8; i++) {
+        vga_put_char_at(2 + walls[i][0], 2 + walls[i][1], 'X', 0x08);
+    }
 
     for (int i = 0; i < len; i++)
         vga_put_char_at(2 + snake_x[i], 2 + snake_y[i], i == 0 ? '@' : 'o', i == 0 ? 0x0E : 0x0A);
@@ -69,7 +85,7 @@ void gui_run_snake(void) {
         }
 
         unsigned int now = get_ticks();
-        if (now - last_tick < 15) continue;
+        if (now - last_tick < (unsigned)snake_speed) continue;
         last_tick = now;
 
         int nx = snake_x[0] + dx;
@@ -78,6 +94,9 @@ void gui_run_snake(void) {
         if (nx <= 0 || nx >= W - 1 || ny <= 0 || ny >= H - 1) { over = 1; break; }
         for (int i = 0; i < len; i++)
             if (snake_x[i] == nx && snake_y[i] == ny) { over = 1; break; }
+        /* Проверка столкновения со стенами */
+        for (int i = 0; i < 8; i++)
+            if (nx == walls[i][0] && ny == walls[i][1]) { over = 1; break; }
         if (over) break;
 
         int ate = (nx == food_x && ny == food_y);
