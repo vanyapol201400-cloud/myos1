@@ -12,6 +12,7 @@ static int first = -1;     /* первая открытая карта */
 static int second = -1;    /* вторая открытая */
 static int moves = 0;
 static int pairs_found = 0;
+static int best_moves = 999;
 
 static void shuffle(void) {
     unsigned int seed = get_ticks() * 1103515245 + 12345;
@@ -42,6 +43,15 @@ static void draw(int cur, int won) {
             vga_put_char_at(x, y, ' ', 0x07);
 
     const char *t = "MEMORY - find the pairs";
+    /* Рекорд */
+    if (best_moves < 999) {
+        const char *b = "BEST: ";
+        for (int k = 0; b[k]; k++) vga_put_char_at(2, 1, b[k], 0x0E);
+        char bbuf[4]; int bn = best_moves, bi = 0;
+        if (bn == 0) bbuf[bi++] = '0';
+        while (bn > 0) { bbuf[bi++] = '0' + bn % 10; bn /= 10; }
+        for (int j = 0; j < bi; j++) vga_put_char_at(8 + j, 1, bbuf[bi - 1 - j], 0x0E);
+    }
     for (int i = 0; t[i]; i++) vga_put_char_at(28 + i, 1, t[i], 0x1F);
 
     const char *h = "Arrows: move   Enter: flip   R: restart   Esc: exit";
@@ -133,6 +143,7 @@ void gui_run_memory(void) {
                     draw(cur, 0);
                 }
                 if (pairs_found == 8) {
+                    if (moves < best_moves) best_moves = moves;
                     draw(cur, 1);
                     while (!keyboard_has_char()) { __asm__ volatile ("hlt"); }
                     keyboard_get_char();

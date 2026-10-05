@@ -6,6 +6,7 @@ extern uint32_t get_ticks(void);
 
 static int board[16];   /* 0 = пустая клетка, 1-15 = плитки */
 static int moves = 0;
+static int best_15 = 99999;
 
 static void init_solved(void) {
     for (int i = 0; i < 15; i++) board[i] = i + 1;
@@ -53,6 +54,15 @@ static void draw(int solved) {
     /* Счётчик ходов */
     const char *m = "Moves: ";
     for (int i = 0; m[i]; i++) vga_put_char_at(60 + i, 1, m[i], 0x0E);
+    /* Рекорд */
+    if (best_15 < 99999) {
+        const char *b = "BEST: ";
+        for (int k = 0; b[k]; k++) vga_put_char_at(2, 1, b[k], 0x0E);
+        char bbuf[6]; int bn = best_15, bi = 0;
+        if (bn == 0) bbuf[bi++] = '0';
+        while (bn > 0) { bbuf[bi++] = '0' + bn % 10; bn /= 10; }
+        for (int j = 0; j < bi; j++) vga_put_char_at(8 + j, 1, bbuf[bi - 1 - j], 0x0E);
+    }
     char buf[8]; int n = moves, i = 0;
     if (n == 0) buf[i++] = '0';
     while (n > 0) { buf[i++] = '0' + n % 10; n /= 10; }
@@ -141,6 +151,7 @@ void gui_run_puzzle15(void) {
             draw(solved);
 
             if (solved) {
+                if (moves < best_15) best_15 = moves;
                 while (!keyboard_has_char()) { __asm__ volatile ("hlt"); }
                 keyboard_get_char();
                 return;
