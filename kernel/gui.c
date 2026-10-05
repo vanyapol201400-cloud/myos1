@@ -22,6 +22,8 @@ static int active   = 0;
 static int screen   = 0;
 static int selected = 0;
 static int blink_state = 0;
+static int easter_egg = 0;
+static int easter_seq = 0;
 
 /* ---------- утилиты ---------- */
 static void clear_all(void) {
@@ -100,6 +102,33 @@ static void gui_animate_panel(int cx, int cy, int max_w, int max_h, uint8_t attr
     }
     /* Финальная отрисовка полного размера */
     fill_rect(cx - max_w / 2, cy - max_h / 2, max_w, max_h, attr);
+}
+
+/* ---------- ПАСХАЛКА ---------- */
+static void draw_easter(void) {
+    clear_all();
+    fill_rect(0, 0, 80, 25, 0x0F);
+    header("*** SECRET ***");
+
+    const char *msg[] = {
+        "    CONGRATULATIONS!    ",
+        "                      ",
+        "  You found the secret ",
+        "  EASTER EGG of MyOS!  ",
+        "                      ",
+        "  Made by vanyapol     ",
+        "  201400-cloud         ",
+        "                      ",
+        "  GitHub:              ",
+        "  vanyapol201400-cloud ",
+        "  /myos1               ",
+        "                      ",
+        "  Press any key...     "
+    };
+    for (int i = 0; i < 13; i++) {
+        draw_str(28, 6 + i, msg[i], 0x0F);
+    }
+    footer("Esc: back");
 }
 
 /* ---------- главное меню ---------- */
@@ -250,6 +279,7 @@ void gui_draw(void) {
     if      (screen == 0) draw_menu();
     else if (screen == 1) draw_games();
     else if (screen == 2) draw_window();
+    else if (screen == 3) draw_easter();
 }
 
 void gui_tick(void) {
@@ -262,6 +292,12 @@ void gui_exit(void)   { active = 0; }
 
 void gui_key(int key) {
     if (!active) return;
+
+    /* Пасхалка — Esc для выхода */
+    if (screen == 3) {
+        if (key == 0x1B) { screen = 0; selected = 0; easter_seq = 0; gui_draw(); }
+        return;
+    }
 
     if (screen == 2) {
         if (key == 0x1B) { screen = 0; selected = 0; gui_draw(); }
@@ -288,6 +324,21 @@ void gui_key(int key) {
         }
         else if (key == 0x1B) { screen = 0; selected = 0; gui_draw(); }
         else if (key >= '1' && key <= '9') { selected = key - '1'; gui_draw(); }
+        return;
+    }
+
+    /* Пасхалка: набери MAGIC */
+    if (key == 'M' || key == 'm') { easter_seq = 1; easter_egg++; }
+    else if (key == 'A' || key == 'a') { easter_seq = (easter_seq == 1) ? 2 : 0; }
+    else if (key == 'G' || key == 'g') { easter_seq = (easter_seq == 2) ? 3 : 0; }
+    else if (key == 'I' || key == 'i') { easter_seq = (easter_seq == 3) ? 4 : 0; }
+    else if (key == 'C' || key == 'c') { easter_seq = (easter_seq == 4) ? 5 : 0; }
+    else { easter_seq = 0; }
+
+    if (easter_seq == 5) {
+        easter_seq = 0;
+        screen = 3;  /* пасхалка */
+        draw_easter();
         return;
     }
 
