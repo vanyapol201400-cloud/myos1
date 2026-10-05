@@ -66,6 +66,8 @@ extern void rtc_read_time(uint8_t *h, uint8_t *m, uint8_t *s);
 void draw_clock(int x, int y) {
     uint8_t h, m, s;
     rtc_read_time(&h, &m, &s);
+    /* Стираем старые 8 символов */
+    for (int i = 0; i < 8; i++) vga_put_char_at(x + i, y, ' ', 0x1E);
     char buf[9];
     buf[0] = '0' + h / 10; buf[1] = '0' + h % 10;
     buf[2] = ':';
@@ -76,17 +78,38 @@ void draw_clock(int x, int y) {
     draw_str(x, y, buf, 0x1E);
 }
 
+extern void rtc_read_date(uint8_t *d, uint8_t *mo, uint16_t *y);
+
+void draw_date(int x, int y) {
+    uint8_t d, mo;
+    uint16_t yr;
+    rtc_read_date(&d, &mo, &yr);
+    /* Стираем старые 10 символов */
+    for (int i = 0; i < 10; i++) vga_put_char_at(x + i, y, ' ', 0x1E);
+    char buf[11];
+    buf[0] = '0' + d / 10;   buf[1] = '0' + d % 10;
+    buf[2] = '.';
+    buf[3] = '0' + mo / 10;  buf[4] = '0' + mo % 10;
+    buf[5] = '.';
+    buf[6] = '0' + (yr / 1000) % 10;
+    buf[7] = '0' + (yr / 100) % 10;
+    buf[8] = '0' + (yr / 10) % 10;
+    buf[9] = '0' + yr % 10;
+    buf[10] = 0;
+    draw_str(x, y, buf, 0x1E);
+}
+
 static void header(const char *title) {
     fill_rect(0, 0, 80, 1, 0x1E);
     draw_str(2, 0, "MyOS v0.1", 0x1E);
     if (title) draw_str(33, 0, title, 0x1E);
-    draw_str(68, 0, "GUI", 0x1E);
-    draw_clock(60, 0);
+    draw_clock(66, 0);
 }
 
 static void footer(const char *s) {
     fill_rect(0, 24, 80, 1, 0x1E);
     draw_str(2, 24, s, 0x1E);
+    draw_date(66, 24);
 }
 
 

@@ -13,20 +13,34 @@ extern void gui_key(int key);
 extern int  gui_active(void);
 extern void gui_exit(void);
 extern void gui_tick(void);
-extern uint32_t get_ticks(void);
+extern void draw_clock(int x, int y);
 extern void cls_direct(void);
+extern uint32_t get_ticks(void);
 
 #define VGA_HEIGHT 25
 
 void shell_loop(void) {
     uint32_t last_blink = 0;
+    uint32_t last_clock = 0;
+
     while (1) {
         __asm__ volatile ("hlt");
 
         uint32_t now_t = get_ticks();
+
+        /* Мигание курсора каждые 0.5 сек */
         if (now_t - last_blink > 50) {
             last_blink = now_t;
             if (gui_active()) gui_tick();
+        }
+
+        /* Обновление часов каждую секунду */
+        uint32_t now_sec = now_t / 100;
+        if (now_sec != last_clock) {
+            last_clock = now_sec;
+            if (gui_active()) {
+                draw_clock(66, 0);
+            }
         }
 
         if (keyboard_has_char()) {
