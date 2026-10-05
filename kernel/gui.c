@@ -24,6 +24,7 @@ static int selected = 0;
 static int blink_state = 0;
 static int easter_egg = 0;
 static int easter_seq = 0;
+static int easter2_seq = 0;
 
 /* ---------- утилиты ---------- */
 static void clear_all(void) {
@@ -147,6 +148,33 @@ static void draw_easter(void) {
         "  /myos1               ",
         "                      ",
         "  Press any key...     "
+    };
+    for (int i = 0; i < 13; i++) {
+        draw_str(28, 6 + i, msg[i], 0x0F);
+    }
+    footer("Esc: back");
+}
+
+/* ---------- ПАСХАЛКА 2 ---------- */
+static void draw_easter2(void) {
+    clear_all();
+    fill_rect(0, 0, 80, 25, 0x0F);
+    header("*** HELLO ***");
+
+    const char *msg[] = {
+        "                     ",
+        "      HELLO!         ",
+        "                     ",
+        "  Ты нашёл вторую    ",
+        "  пасхалку!          ",
+        "                     ",
+        "  MyOS — это проект  ",
+        "  на C и NASM.       ",
+        "                     ",
+        "  Спасибо, что       ",
+        "  играешь!           ",
+        "                     ",
+        "  Press any key...   ",
     };
     for (int i = 0; i < 13; i++) {
         draw_str(28, 6 + i, msg[i], 0x0F);
@@ -303,6 +331,7 @@ void gui_draw(void) {
     else if (screen == 1) draw_games();
     else if (screen == 2) draw_window();
     else if (screen == 3) draw_easter();
+    
 }
 
 void gui_tick(void) {
@@ -316,6 +345,7 @@ void gui_exit(void)   { active = 0; }
 void gui_key(int key) {
     if (!active) return;
 
+    /* Пасхалка 2 */
     /* Пасхалка — Esc для выхода */
     if (screen == 3) {
         if (key == 0x1B) { screen = 0; selected = 0; easter_seq = 0; gui_draw(); }
