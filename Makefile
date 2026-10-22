@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -m32 -ffreestanding -fno-pie -nostdlib -nostdinc -Iinclude -Wall -Wextra
 
-OBJS = kernel/entry.o kernel/isr.o kernel/switch.o kernel/kernel.o kernel/idt.o kernel/pic.o kernel/keyboard.o kernel/shell.o kernel/util.o kernel/paging.o kernel/heap.o kernel/virtio.o kernel/virtio_net.o kernel/pci.o kernel/myfs.o kernel/task.o kernel/test_tasks.o kernel/mouse.o kernel/mouse_cursor.o kernel/gui.o kernel/games.o kernel/minesweeper.o kernel/game2048.o kernel/tictactoe.o kernel/life.o kernel/puzzle15.o kernel/memory.o kernel/rtc.o kernel/speaker.o kernel/fileman.o kernel/calc.o kernel/font_ru.o kernel/dmesg.o kernel/gdt.o kernel/gdt_flush.o kernel/usermode.o kernel/usermode_asm.o kernel/syscall.o kernel/loader.o kernel/shell_loop.o
+OBJS = kernel/entry.o kernel/isr.o kernel/switch.o kernel/kernel.o kernel/idt.o kernel/pic.o kernel/keyboard.o kernel/shell.o kernel/util.o kernel/paging.o kernel/heap.o kernel/virtio.o kernel/virtio_net.o kernel/pci.o kernel/myfs.o kernel/task.o kernel/test_tasks.o kernel/mouse.o kernel/mouse_cursor.o kernel/gui.o kernel/games.o kernel/minesweeper.o kernel/game2048.o kernel/tictactoe.o kernel/life.o kernel/puzzle15.o kernel/memory.o kernel/rtc.o kernel/speaker.o kernel/fileman.o kernel/calc.o kernel/dmesg.o kernel/gdt.o kernel/gdt_flush.o kernel/usermode.o kernel/usermode_asm.o kernel/syscall.o kernel/loader.o kernel/shell_loop.o
 
 all: kernel.elf kernel.bin
 
@@ -140,5 +140,5 @@ kernel/speaker.o: kernel/speaker.c
 kernel/font_ru.o : kernel/font_ru.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-kernel/font_ru.o: kernel/font_ru.c
+kernel/font_ru.o : kernel/font_ru.c
 	$(CC) $(CFLAGS) -c $< -o $@
