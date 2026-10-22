@@ -150,18 +150,24 @@ void gui_run_pong(void) {
 
     int ball_x = 40, ball_y = 12;
     int ball_dx = 1, ball_dy = 1;
-    int pad_y = 10;
-    int score = 0;
+    int pad_y = 10;      /* левая (игрок 1: W/S) */
+    int pad2_y = 10;     /* правая (игрок 2: ↑/↓) */
+    int score1 = 0;
+    int score2 = 0;
     int over = 0;
 
     for (int x = 2; x < 78; x++) {
         vga_put_char_at(x, 2, '=', 0x0A);
         vga_put_char_at(x, 22, '=', 0x0A);
     }
-    draw_str(35, 0, "PONG", 0x1F);
-    draw_str(60, 4, "Score:", 0x0F);
+    draw_str(35, 0, "PONG - 2 PLAYERS", 0x1F);
+    draw_str(2,  1, "P1:", 0x0E);
+    draw_str(73, 1, "P2:", 0x0C);
 
-    for (int y = 0; y < 4; y++) vga_put_char_at(3, pad_y + y, '|', 0x0E);
+    for (int y = 0; y < 4; y++) {
+        vga_put_char_at(3,  pad_y  + y, '|', 0x0E);
+        vga_put_char_at(76, pad2_y + y, '|', 0x0C);
+    }
 
     unsigned int last_tick = get_ticks();
 
@@ -169,14 +175,25 @@ void gui_run_pong(void) {
         if (keyboard_has_char()) {
             char c = keyboard_get_char();
             if (c == 0x1B) return;
-            if ((c == 'w' || c == 0x15) && pad_y > 3) {
+            /* Игрок 1: W/S */
+            if (c == 'w' && pad_y > 3) {
                 vga_put_char_at(3, pad_y + 3, ' ', 0x07);
                 pad_y--;
                 vga_put_char_at(3, pad_y, '|', 0x0E);
-            } else if ((c == 's' || c == 0x17) && pad_y < 18) {
+            } else if (c == 's' && pad_y < 18) {
                 vga_put_char_at(3, pad_y, ' ', 0x07);
                 pad_y++;
                 vga_put_char_at(3, pad_y + 3, '|', 0x0E);
+            }
+            /* Игрок 2: ↑/↓ (0x15 / 0x17) */
+            if (c == 0x15 && pad2_y > 3) {
+                vga_put_char_at(76, pad2_y + 3, ' ', 0x07);
+                pad2_y--;
+                vga_put_char_at(76, pad2_y, '|', 0x0C);
+            } else if (c == 0x17 && pad2_y < 18) {
+                vga_put_char_at(76, pad2_y, ' ', 0x07);
+                pad2_y++;
+                vga_put_char_at(76, pad2_y + 3, '|', 0x0C);
             }
         }
 
@@ -190,11 +207,11 @@ void gui_run_pong(void) {
         ball_y += ball_dy;
 
         if (ball_y <= 3 || ball_y >= 21) ball_dy = -ball_dy;
-        if (ball_x <= 4) {
+        if (ball_x <= 5) {
             if (ball_y >= pad_y && ball_y <= pad_y + 3) {
                 ball_dx = -ball_dx;
-                score++;
-                print_num(67, 4, score, 0x0F);
+                score1++;
+                print_num(2, 1, score1, 0x0E);
             } else {
                 over = 1;
                 break;
