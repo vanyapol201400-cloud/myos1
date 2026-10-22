@@ -71,6 +71,7 @@ void keyboard_handler(void) {
         return;
     }
     if (sc == 0x01) { push_char(K_ESC); return; }
+
     if (sc >= 128) return;
 
     char c = shift_down ? kbd_en_upper[sc] : kbd_en_lower[sc];

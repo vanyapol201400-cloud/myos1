@@ -61,6 +61,12 @@ static void render(void) {
 }
 
 
+
+
+
+
+extern void load_ru_font(void);
+
 void vga_put_char_at(int x, int y, char c, uint8_t attr) {
     volatile char *vga = (volatile char *)VGA_MEMORY;
     int pos = y * VGA_WIDTH + x;
@@ -231,6 +237,7 @@ extern void shell_loop(void);
 void kernel_main(void) {
     dmesg_init();
     clear_screen();
+    load_ru_font();
     print("Hello from my kernel!\n");
     print("Boot OK.\n");
 

@@ -4,20 +4,18 @@ extern void vga_put_char_at(int x, int y, char c, uint8_t attr);
 extern int  keyboard_has_char(void);
 extern char keyboard_get_char(void);
 
-static void fill_rect(int x, int y, int w, int h, char c, uint8_t attr) {
-    for (int j = 0; j < h; j++)
-        for (int i = 0; i < w; i++)
-            vga_put_char_at(x + i, y + j, c, attr);
-}
 static void draw_str(int x, int y, const char *s, uint8_t attr) {
     for (int i = 0; s[i]; i++) vga_put_char_at(x + i, y, s[i], attr);
 }
+
 static int my_atoi(const char *s) {
     int n = 0, sign = 1;
+    while (*s == ' ') s++;
     if (*s == '-') { sign = -1; s++; }
     while (*s >= '0' && *s <= '9') { n = n * 10 + (*s - '0'); s++; }
     return n * sign;
 }
+
 static void print_int(int x, int y, int n, uint8_t attr) {
     char buf[16]; int i = 0;
     if (n == 0) { vga_put_char_at(x, y, '0', attr); return; }
@@ -27,64 +25,61 @@ static void print_int(int x, int y, int n, uint8_t attr) {
 }
 
 void gui_run_calc(void) {
-    fill_rect(0, 0, 80, 25, ' ', 0x07);
+    for (int y = 0; y < 25; y++)
+        for (int x = 0; x < 80; x++)
+            vga_put_char_at(x, y, ' ', 0x07);
 
-    int ox = 20, oy = 4;
-    fill_rect(ox, oy, 40, 18, ' ', 0x70);
-    draw_str(ox + 2, oy, "=== Calculator ===", 0x70);
-    fill_rect(ox + 2, oy + 2, 36, 1, ' ', 0x0F);
-    draw_str(ox + 2, oy + 2, ">", 0x0E);
+    draw_str(2, 1, "=== Calculator ===", 0x1F);
+    draw_str(2, 3, "1234567890 +-*/ (Enter=calc, Esc=exit)", 0x0E);
+    draw_str(2, 5, "Examples:", 0x0E);
+    draw_str(4, 6, "12+34", 0x1F);
+    draw_str(4, 7, "5*6", 0x1F);
+    draw_str(4, 8, "100/4", 0x1F);
+    draw_str(4, 9, "7-3", 0x1F);
 
-    draw_str(ox + 2, oy + 5, "Examples:", 0x70);
-    draw_str(ox + 4, oy + 6, "12 + 34", 0x70);
-    draw_str(ox + 4, oy + 7, "5 * 6", 0x70);
-    draw_str(ox + 4, oy + 8, "100 / 4", 0x70);
-    draw_str(ox + 4, oy + 9, "7 - 3", 0x70);
-    draw_str(ox + 2, oy + 12, "Enter - calc, Esc - exit", 0x70);
-
-    char line[64]; int len = 0;
-    int result = 0;
-    int has_result = 0;
+    char line[64]; int len = 0; line[0] = 0;
+    draw_str(2, 12, "> ", 0x0F);
 
     while (1) {
-        for (int i = 0; i < 34; i++) vga_put_char_at(ox + 3 + i, oy + 2, ' ', 0x0F);
-        for (int i = 0; i < len; i++) vga_put_char_at(ox + 3 + i, oy + 2, line[i], 0x0F);
-        vga_put_char_at(ox + 3 + len, oy + 2, '_', 0x0E);
+        if (keyboard_has_char()) {
+            char c = keyboard_get_char();
+            if (c == 0x1B) return;
 
-        if (has_result) {
-            draw_str(ox + 2, oy + 14, "= ", 0x1F);
-            print_int(ox + 4, oy + 14, result, 0x1F);
+            if (c == '\n') {
+                int a = 0, b = 0, res = 0; char op = 0;
+                int op_pos = -1;
+                for (int i = 0; line[i]; i++) {
+                    if (line[i] == '+' || line[i] == '-' || line[i] == '*' || line[i] == '/') {
+                        op_pos = i; op = line[i]; break;
+                    }
+                }
+                if (op_pos > 0) {
+                    a = my_atoi(line);
+                    b = my_atoi(line + op_pos + 1);
+                    if (op == '+') res = a + b;
+                    else if (op == '-') res = a - b;
+                    else if (op == '*') res = a * b;
+                    else if (op == '/') res = (b != 0) ? a / b : 0;
+                }
+                for (int i = 0; i < 20; i++) vga_put_char_at(4 + i, 14, ' ', 0x07);
+                draw_str(2, 14, "= ", 0x1F);
+                print_int(4, 14, res, 0x2A);
+
+                for (int i = 0; i < 40; i++) vga_put_char_at(2 + i, 12, ' ', 0x07);
+                draw_str(2, 12, "> ", 0x0F);
+                len = 0; line[0] = 0;
+            }
+            else if (c == '\b') {
+                if (len > 0) { len--; line[len] = 0; }
+                for (int i = 0; i < 40; i++) vga_put_char_at(4 + i, 12, ' ', 0x07);
+            }
+            else if ((c >= '0' && c <= '9') || c == '+' || c == '-' || c == '*' || c == '/' || c == '.') {
+                if (len < 34) { line[len++] = c; line[len] = 0; }
+            }
         }
 
-        if (!keyboard_has_char()) { __asm__ volatile ("hlt"); continue; }
-        char c = keyboard_get_char();
-
-        if (c == 0x1B) return;
-
-        if (c == '\n') {
-            int i = 0;
-            while (line[i] == ' ') i++;
-            char num1s[16]; int n1i = 0;
-            while (line[i] >= '0' && line[i] <= '9') num1s[n1i++] = line[i++];
-            num1s[n1i] = 0;
-            while (line[i] == ' ') i++;
-            char op = line[i++];
-            while (line[i] == ' ') i++;
-            char num2s[16]; int n2i = 0;
-            while (line[i] >= '0' && line[i] <= '9') num2s[n2i++] = line[i++];
-            num2s[n2i] = 0;
-
-            int a = my_atoi(num1s);
-            int b = my_atoi(num2s);
-            if (op == '+') result = a + b;
-            else if (op == '-') result = a - b;
-            else if (op == '*') result = a * b;
-            else if (op == '/') result = (b != 0) ? a / b : 0;
-            has_result = 1;
-            len = 0;
-            continue;
-        }
-        if (c == '\b') { if (len > 0) len--; continue; }
-        if (c >= 32 && c < 127 && len < 63) line[len++] = c;
+        for (int i = 0; i < len; i++)
+            vga_put_char_at(4 + i, 12, line[i], 0x0F);
+        vga_put_char_at(4 + len, 12, '_', 0x0E);
     }
 }
